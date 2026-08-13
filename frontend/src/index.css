@@ -1,0 +1,163 @@
+:root {
+  --navy: #0a1f44;
+  --navy-2: #102a56;
+  --navy-3: #16356a;
+  --blue: #2563eb;
+  --blue-dark: #1b4fd0;
+  --green: #1e9e5a;
+  --green-dark: #15803d;
+  --bg: #f1f4f9;
+  --card: #ffffff;
+  --border: #e3e8f0;
+  --text: #0f1b2d;
+  --text-dim: #5b6b80;
+  --text-faint: #8c99ab;
+
+  --band-high: #22c55e;
+  --band-moderate: #eab308;
+  --band-marginal: #f97316;
+  --band-nonviable: #9ca3af;
+
+  --shadow: 0 1px 3px rgba(16, 31, 68, 0.08), 0 1px 2px rgba(16, 31, 68, 0.04);
+  --shadow-lg: 0 4px 16px rgba(16, 31, 68, 0.1);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  color: var(--text);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { background: var(--bg); }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---- Layout shell ---- */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px; flex-shrink: 0; background: var(--navy); color: #cdd7e6;
+  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+}
+.sidebar .brand { padding: 22px 20px 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.sidebar .brand h1 { font-size: 22px; font-weight: 800; color: #fff; margin: 0; letter-spacing: .5px; }
+.sidebar .brand p { font-size: 11px; color: #8aa0c0; margin: 4px 0 0; line-height: 1.3; }
+.nav { padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+.nav a {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+  color: #b9c6da; font-size: 14px; font-weight: 500;
+}
+.nav a:hover { background: var(--navy-2); color: #fff; text-decoration: none; }
+.nav a.active { background: var(--blue); color: #fff; }
+.nav .nav-ico { width: 16px; text-align: center; opacity: .9; }
+
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ---- Cards & generic ---- */
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.card-pad { padding: 18px 20px; }
+.card-title { font-size: 15px; font-weight: 700; margin: 0 0 14px; color: var(--text); }
+.card-sub { font-size: 11.5px; color: var(--text-faint); margin: 0; line-height: 1.45; }
+.muted { color: var(--text-dim); }
+.faint { color: var(--text-faint); }
+
+/* Card anatomy: header band, flexible body, bottom-anchored footer */
+.card-col { display: flex; flex-direction: column; }
+.card-head { padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+.card-head .card-title { margin-bottom: 4px; }
+.card-foot { margin-top: auto; }
+
+/* Label / value data row inside a card */
+.drow {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 8px 0; border-bottom: 1px solid #eef1f6; font-size: 13px;
+}
+.drow:last-child { border-bottom: none; }
+.drow .val { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Tinted headline block (NPV/IRR, turbine name) */
+.headline-box {
+  background: #f5f8fd; border: 1px solid #e6edf8; border-radius: 10px;
+  padding: 10px 14px; display: flex; gap: 26px; align-items: baseline;
+}
+
+/* Hoverable term with an explanation tooltip */
+.hint { cursor: help; border-bottom: 1px dotted #c2ccda; }
+.hint:hover { border-bottom-color: var(--blue); }
+
+/* ---- KPI tiles ---- */
+.kpi-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.kpi {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 18px; min-width: 150px; box-shadow: var(--shadow);
+}
+.kpi .v { font-size: 26px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+.kpi .l { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px; border: none; cursor: pointer;
+  padding: 9px 15px; border-radius: 8px; font-size: 13px; font-weight: 600;
+}
+.btn-blue { background: var(--blue); color: #fff; }
+.btn-blue:hover { background: var(--blue-dark); }
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:hover { background: var(--green-dark); }
+.btn-ghost { background: #fff; color: var(--blue); border: 1px solid #c9d6ea; }
+
+/* ---- Badges / pills ---- */
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.pill-high { background: #e7f8ee; color: #15803d; }
+.pill-medium { background: #fff5e0; color: #b45309; }
+.pill-lower { background: #eef1f6; color: #5b6b80; }
+
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+/* ---- Tables ---- */
+table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.tbl th {
+  text-align: left; padding: 10px 12px; color: var(--text-dim); font-weight: 600;
+  border-bottom: 2px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none;
+}
+table.tbl td { padding: 9px 12px; border-bottom: 1px solid #eef1f6; white-space: nowrap; }
+table.tbl tr:hover td { background: #f7f9fc; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---- Forms ---- */
+input[type="text"], select {
+  font: inherit; padding: 8px 11px; border: 1px solid #cdd8e8; border-radius: 8px;
+  background: #fff; color: var(--text); font-size: 13px;
+}
+.loading { padding: 40px; text-align: center; color: var(--text-dim); }
+
+/* ---- Pagination ---- */
+.pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 12px; }
+.pager .btn:disabled { opacity: .45; cursor: default; }
+
+/* ---- Analytics grid ---- */
+.an-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+/* ---- Responsive ---- */
+@media (max-width: 1100px) {
+  .an-grid { grid-template-columns: 1fr; }
+  .pd-grid { grid-template-columns: 1fr !important; }
+  .sp-charts { flex-direction: column; }
+}
+
+@media (max-width: 900px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: static; }
+  .sidebar .brand { padding: 14px 16px 10px; }
+  .nav { flex-direction: row; flex-wrap: wrap; padding: 8px 10px; }
+  .nav a { padding: 7px 10px; font-size: 13px; }
+
+  /* National map: stack panels, map keeps a fixed usable height */
+  .nm-body { flex-direction: column; overflow-y: auto; }
+  .nm-filters, .nm-side { width: 100% !important; border-right: none !important; border-left: none !important; border-bottom: 1px solid var(--border); }
+  .nm-map { min-height: 420px; }
+
+  /* State portfolio: summary drops below table */
+  .sp-body { flex-direction: column; }
+  .sp-summary { width: 100% !important; }
+}

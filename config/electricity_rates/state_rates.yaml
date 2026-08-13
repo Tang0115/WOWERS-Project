@@ -1,0 +1,59 @@
+# 2023 EIA Average Industrial Electricity Rates ($/kWh)
+# Source: U.S. Energy Information Administration, Electric Power Monthly, Table 5.6.B
+# "Average Retail Price of Electricity, Industrial" — 2023 annual averages
+# https://www.eia.gov/electricity/monthly/
+
+national_avg: 0.081
+
+states:
+  AK: 0.137
+  AL: 0.065
+  AR: 0.069
+  AZ: 0.077
+  CA: 0.172
+  CO: 0.074
+  CT: 0.124
+  DC: 0.091
+  DE: 0.094
+  FL: 0.076
+  GA: 0.067
+  HI: 0.241
+  IA: 0.063
+  ID: 0.049
+  IL: 0.073
+  IN: 0.071
+  KS: 0.073
+  KY: 0.063
+  LA: 0.059
+  MA: 0.137
+  MD: 0.090
+  ME: 0.106
+  MI: 0.081
+  MN: 0.075
+  MO: 0.064
+  MS: 0.069
+  MT: 0.060
+  NC: 0.070
+  ND: 0.067
+  NE: 0.072
+  NH: 0.118
+  NJ: 0.097
+  NM: 0.074
+  NV: 0.089
+  NY: 0.062
+  OH: 0.074
+  OK: 0.070
+  OR: 0.062
+  PA: 0.073
+  RI: 0.120
+  SC: 0.067
+  SD: 0.077
+  TN: 0.074
+  TX: 0.075
+  UT: 0.068
+  VA: 0.072
+  VT: 0.097
+  WA: 0.046
+  WI: 0.074
+  WV: 0.066
+  WY: 0.065

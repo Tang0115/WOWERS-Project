@@ -1,0 +1,145 @@
+<mxfile host="drawio-skill" type="device">
+  <diagram name="fig01-system-block" id="fig01">
+    <mxGraphModel dx="1400" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ================= tier labels (left gutter) ================= -->
+        <mxCell id="lbl1" value="Public /&lt;br&gt;agency inputs" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=20;fontColor=#8C8C8C;" vertex="1" parent="1">
+          <mxGeometry x="-66" y="90" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl2" value="Offline Python&lt;br&gt;screening&lt;br&gt;pipeline&lt;br&gt;(Phases 1–4)" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=20;fontColor=#8C8C8C;" vertex="1" parent="1">
+          <mxGeometry x="-66" y="345" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl3" value="Export /&lt;br&gt;serving /&lt;br&gt;visualization" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=20;fontColor=#8C8C8C;" vertex="1" parent="1">
+          <mxGeometry x="-66" y="660" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ================= source row ================= -->
+        <mxCell id="echo" value="EPA ECHO&lt;br&gt;ICIS facilities&lt;br&gt;+ permits" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EBEBEB;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=22;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="100" y="70" width="240" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="dmr" value="EPA DMR param 50050&lt;br&gt;FY2009–24&lt;br&gt;(~279M rows)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EBEBEB;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=20;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="380" y="70" width="240" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="dep" value="USGS 3DEP EPQS&lt;br&gt;elevations&lt;br&gt;(DEM head)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EBEBEB;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=22;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="660" y="70" width="240" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="eha" value="DOE EHA /&lt;br&gt;EIA-860/923&lt;br&gt;CF &amp; generation labels" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EBEBEB;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=20;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="940" y="70" width="240" height="88" as="geometry" />
+        </mxCell>
+
+        <!-- ================= CF calibration side analysis ================= -->
+        <mxCell id="cf" value="CF calibration&lt;br&gt;119–281 GWh/yr band&lt;br&gt;&lt;span style=&quot;font-size:19px&quot;&gt;(side analysis)&lt;/span&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=20;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="940" y="210" width="240" height="76" as="geometry" />
+        </mxCell>
+
+        <!-- ================= phase row ================= -->
+        <mxCell id="p1" value="Phase 1&lt;br&gt;POTW filter · FDC&lt;br&gt;ranking&lt;br&gt;&lt;span style=&quot;font-size:19px&quot;&gt;→ ranked_candidates&lt;/span&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#DBDBDB;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=22;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="100" y="340" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" value="Phase 2&lt;br&gt;Monte-Carlo energy&lt;br&gt;P10 / P50 / P90&lt;br&gt;&lt;span style=&quot;font-size:19px&quot;&gt;→ energy_yield&lt;/span&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#DBDBDB;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=21;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="380" y="340" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" value="Phase 3&lt;br&gt;3DEP head proxy&lt;br&gt;turbine match&lt;br&gt;&lt;span style=&quot;font-size:19px&quot;&gt;→ turbine_sizing&lt;/span&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#DBDBDB;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=22;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="660" y="340" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" value="Phase 4&lt;br&gt;CapEx · NPV · payback&lt;br&gt;econ gates&lt;br&gt;&lt;span style=&quot;font-size:19px&quot;&gt;→ scorecards&lt;/span&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#DBDBDB;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=20;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="940" y="340" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ================= parquet bus ================= -->
+        <mxCell id="bus" value="" style="rounded=0;fillColor=#333333;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="158" y="530" width="904" height="4" as="geometry" />
+        </mxCell>
+        <mxCell id="buslbl" value="*.parquet&lt;br&gt;intermediates" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=19;fontColor=#8C8C8C;" vertex="1" parent="1">
+          <mxGeometry x="1074" y="512" width="140" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- ================= Phase 5 kill ================= -->
+        <mxCell id="p5" value="Phase 5 ML — killed&lt;br&gt;(only 11 FERC labels)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=#FFFFFF;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=20;fontColor=#8C8C8C;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="900" y="576" width="280" height="64" as="geometry" />
+        </mxCell>
+
+        <!-- ================= export / serving row ================= -->
+        <mxCell id="exp" value="export_geojson.py&lt;br&gt;58-property contract&lt;br&gt;byte-deterministic" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=21;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="100" y="660" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="gj" value="scored_sites.geojson&lt;br&gt;(+ viable_sites)&lt;br&gt;1,138 project-viable" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=21;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="500" y="660" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ui" value="React + MapLibre UI&lt;br&gt;7 views · static build&lt;br&gt;no live backend" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1A1A1A;strokeWidth=2;fontFamily=Helvetica;fontSize=21;fontColor=#111111;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="900" y="660" width="280" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ================= footnote ================= -->
+        <mxCell id="foot" value="Config: settings.yaml   ·   Intermediates: data/processed/phase{1–4}/*.parquet" style="text;html=1;whiteSpace=wrap;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=18;fontColor=#8C8C8C;" vertex="1" parent="1">
+          <mxGeometry x="100" y="800" width="1080" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ================= edges: sources -> phases ================= -->
+        <mxCell id="e_echo_p1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="echo" target="p1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_dmr_p1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;entryX=0.8;entryY=0;" edge="1" parent="1" source="dmr" target="p1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="192" />
+              <mxPoint x="292" y="192" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_dep_p3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="dep" target="p3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_eha_cf" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="eha" target="cf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cf_p2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;dashed=1;dashPattern=6 4;endArrow=blockThin;endFill=1;exitX=0;exitY=0.5;entryX=0.5;entryY=0;jumpStyle=arc;jumpSize=10;" edge="1" parent="1" source="cf" target="p2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="248" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ================= edges: phase chain ================= -->
+        <mxCell id="e_p1_p2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="p1" target="p2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p2_p3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="p2" target="p3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p3_p4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="p3" target="p4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================= edges: phases -> parquet bus (no arrowheads, junctions) ================= -->
+        <mxCell id="e_p1_bus" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=none;startArrow=none;exitX=0.667;exitY=1;entryX=0.113;entryY=0;" edge="1" parent="1" source="p1" target="bus">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p2_bus" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=none;startArrow=none;exitX=0.5;exitY=1;entryX=0.378;entryY=0;" edge="1" parent="1" source="p2" target="bus">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p3_bus" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=none;startArrow=none;exitX=0.5;exitY=1;entryX=0.688;entryY=0;" edge="1" parent="1" source="p3" target="bus">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p4_bus" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=none;startArrow=none;exitX=0.5;exitY=1;entryX=0.998;entryY=0;" edge="1" parent="1" source="p4" target="bus">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================= edges: bus -> export chain ================= -->
+        <mxCell id="e_bus_exp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=0.002;exitY=1;entryX=0.214;entryY=0;" edge="1" parent="1" source="bus" target="exp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_exp_gj" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="exp" target="gj">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_gj_ui" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#222222;strokeWidth=2;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="gj" target="ui">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

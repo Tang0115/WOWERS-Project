@@ -1,0 +1,143 @@
+# Energy intensity lookup table: kWh per million gallons (kWh/MG) treated
+# Primary source: EPRI 3002001433 (Pabi, Amarnath, Goldstein, Reekie), November 2013
+#   - Table 5-4 (p.5-15): treatment type × plant size grid
+#     (Table 5-4 cites: WEF Manual of Practice 32, WEF Press, Alexandria VA, 2009)
+#   - Table 5-2 (p.5-7/5-8): unit process breakdown (used for MBR derivation)
+#   - Table 5-5 (p.5-16): national estimate by treatment level (used as cross-check)
+# Secondary source: EPA (2013) "Energy Efficiency in Water and Wastewater Facilities"
+#   (Local Government Climate and Energy Strategy Series) — corroboration only;
+#   does not contain an independent kWh/MG grid by treatment type.
+#
+# Interpolation rule: log-linear interpolation between bracketing MGD size points.
+# Edge handling: clamp to nearest table value; do not extrapolate beyond table bounds.
+# Size clamp: plants <1 MGD use the 1 MGD value; plants >100 MGD use the 100 MGD value.
+
+# ===========================================================================
+# POINT-ESTIMATE BASIS: observed flow-band energy intensity
+# Source: EPRI 3002001433, Table 5-1, p.5-6
+#   (weighted averages from EPA Energy Star Portfolio Manager dataset,
+#    analyzed by Lawrence Berkeley National Laboratory, Oct 2012)
+# ---------------------------------------------------------------------------
+# These are OBSERVED averages and are treatment-type-agnostic. Validation
+# (scripts/validate_energy_intensity.py) showed they match published utility
+# consumption and the national total far better than the theoretical
+# treatment-type grid below. EPRI itself notes (p.5-15) the WEF Table 5-4
+# values run lower than observed values, especially above 10 MGD. We therefore
+# use these observed bands for the point estimate and reserve the treatment
+# grid for the sensitivity band.
+observed_flow_band_intensity:
+  # (upper_bound_mgd, kwh_per_mg) — band lookup, not interpolated.
+  # Last band (>=100) applies to all larger plants.
+  bands:
+    - {max_mgd: 2,    kwh_per_mg: 3300}
+    - {max_mgd: 4,    kwh_per_mg: 3000}
+    - {max_mgd: 7,    kwh_per_mg: 2400}
+    - {max_mgd: 16,   kwh_per_mg: 2000}
+    - {max_mgd: 46,   kwh_per_mg: 1700}
+    - {max_mgd: 100,  kwh_per_mg: 1700}
+    - {max_mgd: null, kwh_per_mg: 1600}   # >=100 MGD
+  source: "EPRI 3002001433, Table 5-1, p.5-6 (LBNL / EPA Energy Star)"
+
+# ---------------------------------------------------------------------------
+# SENSITIVITY-BAND BASIS: kWh/MG by treatment_type × avg_flow_mgd
+# Source: EPRI 3002001433, Table 5-4, p.5-15 (citing WEF MOP 32, 2009)
+# ---------------------------------------------------------------------------
+# Theoretical per-treatment-type values. Used only for the low/high band to
+# show how much the unknown treatment type matters. NOT the point estimate.
+treatment_types:
+
+  trickling_filter:
+    description: "Conventional trickling filter with secondary clarifiers"
+    size_points_mgd:  [1,     5,    10,    20,    50,    100]
+    kwh_per_mg:       [1811,  978,  852,   750,   687,   673]
+    source: "EPRI 3002001433, Table 5-4, p.5-15 (citing WEF MOP 32, 2009)"
+
+  conventional_activated_sludge:
+    description: "Conventional activated sludge (secondary treatment, no nutrient removal)"
+    size_points_mgd:  [1,     5,     10,    20,    50,    100]
+    kwh_per_mg:       [2236,  1369,  1203,  1114,  1051,  1028]
+    source: "EPRI 3002001433, Table 5-4, p.5-15 (citing WEF MOP 32, 2009)"
+    default: true  # most common US secondary process; used when treatment type unknown
+
+  advanced_without_nitrification:
+    description: "Advanced treatment (BNR / tertiary) without nitrification"
+    size_points_mgd:  [1,     5,     10,    20,    50,    100]
+    kwh_per_mg:       [2596,  1573,  1408,  1303,  1216,  1188]
+    source: "EPRI 3002001433, Table 5-4, p.5-15 (citing WEF MOP 32, 2009)"
+
+  advanced_with_nitrification:
+    description: "Advanced treatment with biological nutrient removal (BNR) + nitrification"
+    size_points_mgd:  [1,     5,     10,    20,    50,    100]
+    kwh_per_mg:       [2951,  1926,  1791,  1676,  1588,  1588]
+    source: "EPRI 3002001433, Table 5-4, p.5-15 (citing WEF MOP 32, 2009)"
+
+  membrane_bioreactor:
+    description: >
+      Membrane bioreactor (MBR). Table 5-2 gives MBR as a unit process only (~2,700 kWh/MG
+      for the membrane step). Full-plant estimate from Table 5-3 example: 3 MGD MBR = 4,910
+      kWh/MG (including pumping, primary treatment, biosolids, etc.). Only a single size
+      example exists in the report; values for other sizes are held constant at 4,910
+      (flagged as assumption — sparse data category).
+    size_points_mgd:  [1,     3,     5,     10,    20,    50]
+    kwh_per_mg:       [4910,  4910,  4910,  4910,  4910,  4910]
+    source: "EPRI 3002001433, Table 5-3 example p.5-12 (3 MGD full-plant composite)"
+    assumed: true
+    assumption_note: >
+      Only one full-plant MBR example in EPRI report (3 MGD). All size bands held constant
+      at 4,910 kWh/MG. Use with caution; MBR is a small fraction of US POTWs.
+
+# ---------------------------------------------------------------------------
+# Treatment-type assignment rule
+# ---------------------------------------------------------------------------
+# Treatment level is NOT present in any EPA NPDES/ICIS field (verified Step 3:
+# ICIS_PERMITS, ICIS_FACILITIES, NPDES_PERM_COMPONENTS, NAICS, SICS all lack it).
+# Treatment type is therefore KNOWN for 0 of 17,163 plants and assigned for 100%.
+#
+# Decision: default every plant to conventional_activated_sludge for the point
+# estimate, and compute a low/high sensitivity band to expose the uncertainty.
+# Every plant is flagged treatment_type_assumed = true.
+treatment_assignment:
+  point_estimate_basis: observed_flow_band_intensity  # Table 5-1 observed averages
+  sensitivity_low: trickling_filter                   # lowest-intensity common process
+  sensitivity_high: advanced_with_nitrification        # highest-intensity common process
+  all_plants_assumed: true
+  rationale: >
+    No treatment-level data exists in the permit source, so treatment type is
+    assigned for 100% of plants. The point estimate uses the OBSERVED flow-band
+    averages (Table 5-1), which validation showed match published utility
+    consumption and the national total far better than the theoretical
+    treatment-type grid. The low/high band uses the Table 5-4 treatment curves
+    (trickling filter to advanced+nitrification) to show how much the unknown
+    treatment type could move the answer. MBR is excluded from the band (rare;
+    would distort the high bound). Note: for very large advanced plants (e.g.
+    Blue Plains) even the high bound under-reads; these are outliers.
+
+# ---------------------------------------------------------------------------
+# National-level energy intensity by permit treatment level
+# Used as cross-check in Step 6 validation.
+# Source: EPRI 3002001433, Table 5-5, p.5-16
+# ---------------------------------------------------------------------------
+national_estimate_by_treatment_level:
+  less_than_secondary:       750   # kWh/MG
+  secondary:                 2080  # kWh/MG  (80% activated sludge, 20% trickling filter)
+  greater_than_secondary:    2690  # kWh/MG  (90% BNR, 10% MBR)
+  no_discharge:              2960  # kWh/MG
+  partial_treatment:          830  # kWh/MG
+  pumping_reuse_water:       1280  # kWh/MG
+  source: "EPRI 3002001433, Table 5-5, p.5-16"
+  note: >
+    National total derived from these values = 30.2 TWh/yr (0.8% of US electricity, 2011).
+    Use this total as the Step 6.2 national sanity check.
+
+# ---------------------------------------------------------------------------
+# Process-step energy breakdown (informational; not used in consumption formula)
+# Source: EPRI 3002001433, Figure 5-2, p.5-4 (Hazen & Sawyer audit data)
+# ---------------------------------------------------------------------------
+process_breakdown_pct:
+  aeration:                  52
+  biosolids_processing:      30
+  pumping:                   12
+  return_activated_sludge:    3
+  miscellaneous:              3
+  source: "EPRI 3002001433, Figure 5-2, p.5-4 (Hazen & Sawyer)"
+  note: "Averages across many facility types; not suitable as a benchmark for any specific plant."

@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+dist-ssr/
+
+# generated data (rebuild with: python scripts/export_web_data.py)
+public/data/
+
+# logs / env / editor
+*.log
+.env
+.env.*
+.DS_Store
+.vite/

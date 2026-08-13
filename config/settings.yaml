@@ -1,0 +1,335 @@
+project:
+  name: WOWERS
+  description: Waste Outfall Water Energy Recovery System
+
+# ── Physics ───────────────────────────────────────────────────────────────────
+physics:
+  rho_water_kg_m3: 998.2          # kg/m³ at ~20°C
+  gravity_m_s2: 9.81              # m/s²
+  mgd_to_m3s: 0.043813            # 1 MGD = 0.043813 m³/s
+  hours_per_year: 8766            # average incl. leap years
+  default_efficiency: 0.82
+  default_availability: 0.95
+
+# ── Head assumptions by facility archetype ────────────────────────────────────
+head_assumptions:
+  large_potw:                     # design_flow > 10 MGD
+    default_m: 8.0
+    low_m: 3.0
+    high_m: 15.0
+  medium_potw:                    # 1 ≤ design_flow ≤ 10 MGD
+    default_m: 5.0
+    low_m: 2.0
+    high_m: 10.0
+  small_potw:                     # design_flow < 1 MGD
+    default_m: 3.0
+    low_m: 1.0
+    high_m: 6.0
+
+# ── Cost model ────────────────────────────────────────────────────────────────
+cost_model:
+  # Global fallback (used only for unknown turbine types)
+  capex_A: 9500
+  capex_B: -0.35
+  capex_min_per_kw: 800
+  capex_max_per_kw: 10000
+  # Per-type power-law CapEx params (DOE Hydropower Vision / ORNL TM-2014/525)
+  types:
+    Kaplan:
+      A: 9500
+      B: -0.35
+      min_per_kw: 800
+      max_per_kw: 10000
+    Francis:
+      A: 8500
+      B: -0.32
+      min_per_kw: 1800     # F4-VENDORBAND: clamp to vendor floor (Canyon/Gilkes min $1,800/kW); was 700 → underpriced 30 large sites below real vendor quotes
+      max_per_kw: 9000
+    Pelton:
+      A: 7000
+      B: -0.30
+      min_per_kw: 600
+      max_per_kw: 8000
+    in_conduit_micro:
+      A: 20283   # recalibrated Jun 2026 vs ORNL BCM canal/conduit ICC equation (TM-2014/525); R²=0.89
+      B: -0.181  # recalibrated Jun 2026 vs ORNL BCM canal/conduit ICC equation (TM-2014/525); R²=0.89
+      min_per_kw: 2000
+      max_per_kw: 15000
+    Crossflow:           # CINK/Ossberger-style cross-flow; simpler runner → lower cost
+      A: 7500
+      B: -0.28
+      min_per_kw: 500
+      max_per_kw: 6000     # F4-VENDORBAND: clamp to vendor ceiling (CINK/Ossberger max $6,000/kW); was 7500 → overpriced 989 small sites
+  opex_pct_of_capex:
+    Kaplan: 0.025
+    Francis: 0.020
+    Pelton: 0.015
+    in_conduit_micro: 0.030
+    Crossflow: 0.020     # simpler runner, lower maintenance than Kaplan
+
+  # F4-INSTALL (2026-06): mechanical installation / labor cost as a fraction of
+  # equipment-only CapEx. Director estimate 15–20% (government procurement
+  # opacity means real install cost is unobtainable; % of turbine cost is the
+  # agreed proxy). Scope: mechanical install / labor ONLY — excludes civil
+  # works; does NOT overlap interconnection or permitting (separate lines).
+  # Reversible lever: set 0.0 to disable (no-op, exact prior behavior).
+  installation_pct_of_equipment: 0.175
+
+  # F4-INTERCON: grid interconnection cost tiers (USD)
+  # Tier lookup by rated_power_kw upper bound (inclusive).
+  # Range: $50k–$200k per FERC small-hydro / NREL distributed-generation surveys.
+  interconnection:
+    # F4-BTM (2026-06-01): behind-the-meter self-consumption branch.
+    # Micro hydro at a WWTP outfall offsets the plant's own electric load behind
+    # the facility meter — no grid export, so NO utility distribution tie, export
+    # PPA, or export-grade metering is required (the $50k+ tiers below assume a
+    # distribution tie). Only a non-export protection relay, disconnect, and
+    # utility notification remain — conservatively $5k (not $0; utility approval
+    # for non-export operation is still typical). Applies to sites ≤ max_kw, which
+    # matches the ≤25 kW qualified_facility / conduit-exemption regulatory cohort.
+    # Source: utility no-export interconnection practice; IEEE 1547 export control.
+    behind_the_meter:
+      max_kw: 25
+      cost_usd: 5000
+    tiers:
+      - {max_kw:      10, cost_usd:  50000}
+      - {max_kw:      50, cost_usd: 100000}
+      - {max_kw:     250, cost_usd: 150000}
+      - {max_kw: 1000000, cost_usd: 200000}  # catch-all upper bound
+
+  # F4-PERMIT-TIER: tiered permitting / environmental review cost (USD)
+  # Tier lookup by rated_power_kw upper bound (inclusive).  Replaces the
+  # original single-step model with FERC small-hydro practice:
+  #   - qualified_facility (≤25 kW): conduit exemption / qualifying facility
+  #   - small_ferc        (≤250 kW): abbreviated FERC review + state cert
+  #   - full_nepa         ( >250 kW): full FERC licensing + NEPA EA/EIS
+  permitting:
+    tiers:
+      # F4-CONDUIT (2026-06-01): qualified_facility = ≤25 kW conduit exemption.
+      # A WWTP outfall is a non-federal man-made municipal water conduit, so a
+      # micro turbine on it is a "qualifying conduit hydropower facility" (HREA
+      # 2013, ≤40 MW). FERC requires NO license/exemption — only a Notice of
+      # Intent (18 CFR 4.401) with NO application fee and NO exhibits. Real cost
+      # is NOI legal/prep + state water-quality coordination only, conservatively
+      # $5k (was $25k — overstated; federal filing itself is free).
+      # Source: ferc.gov "Notice of Intent to Construct a Qualifying Conduit
+      # Hydropower Facility"; 18 CFR 4.400/4.401; Fed. Register 90 FR 185 (2025).
+      - {max_kw:      25, cost_usd:   5000, label: qualified_facility}
+      - {max_kw:     250, cost_usd:  75000, label: small_ferc}
+      - {max_kw: 1000000, cost_usd: 150000, label: full_nepa}
+
+# ── Financials ────────────────────────────────────────────────────────────────
+financials:
+  discount_rate: 0.06
+  project_lifetime_years: 30
+  degradation_rate: 0.002
+  rec_value_per_kwh: 0.01
+  # F4-MINREV-REMOVE (2026-06): director decision — floor removed.
+  # project_viable now = NPV>0 AND payback≤20yr AND IRR real, no revenue floor.
+  # Set to 0 so revenue_above_floor = (revenue >= 0) is always True — the gate
+  # term is a documented no-op while the lever stays reversible in code.
+  # History: raised from $5k → $20k on 2026-05-20 (F4-MINREV-RAISE);
+  # removed 2026-06 after director review of Scenario 1 (what-if analysis).
+  min_annual_revenue_usd: 0
+
+# ── Phase 1: Ranking weights ──────────────────────────────────────────────────
+ranking:
+  weights:
+    mean_flow: 0.35
+    flow_consistency: 0.20        # 1 - cv_flow
+    utilization: 0.15
+    data_quality: 0.10            # n_years_data proxy
+    p10_flow: 0.20
+  # Flow duration curve exceedance probabilities (20 points)
+  fdc_exceedance_probs:
+    - 0.01
+    - 0.05
+    - 0.10
+    - 0.15
+    - 0.20
+    - 0.25
+    - 0.30
+    - 0.35
+    - 0.40
+    - 0.45
+    - 0.50
+    - 0.55
+    - 0.60
+    - 0.65
+    - 0.70
+    - 0.75
+    - 0.80
+    - 0.85
+    - 0.90
+    - 0.95
+
+# ── Data sources ──────────────────────────────────────────────────────────────
+epa:
+  npdes_downloads_url: "https://echo.epa.gov/files/echodownloads/npdes_downloads.zip"
+  npdes_outfalls_url: "https://echo.epa.gov/files/echodownloads/npdes_outfalls_layer.zip"
+  dmr_url_template: "https://echo.epa.gov/files/echodownloads/npdes_dmrs_fy{year}.zip"
+  dmr_fiscal_years:
+    - 2009
+    - 2010
+    - 2011
+    - 2012
+    - 2013
+    - 2014
+    - 2015
+    - 2016
+    - 2017
+    - 2018
+    - 2019
+    - 2020
+    - 2021
+    - 2022
+    - 2023
+    - 2024
+
+usgs:
+  elevation_url: "https://epqs.nationalmap.gov/v1/json"
+
+# ── Phase 2: Monte Carlo Energy Estimation ────────────────────────────────────
+phase2:
+  min_viable_mean_flow_mgd: 0.5   # sites below this threshold excluded as small_potw (W13)
+
+# ── Phase 3: Turbine Sizing ────────────────────────────────────────────────────
+phase3:
+  # Head estimation
+  head_loss_fraction: 0.15        # 15% losses for pipe friction, valves, fittings
+  min_net_head_m: 1.0             # below this head, site is not viable
+  min_flow_for_sizing_m3s: 0.001  # below this Q, skip sizing
+  design_fallback_head_gross_m: 5.0  # gross head when no elevation/literature data available
+
+  # USGS 3DEP API throttling
+  max_concurrent_requests: 10
+  request_delay_s: 0.5            # seconds between batches
+  api_timeout_s: 30
+  max_retries: 3
+  retry_backoff_s: 2.0
+
+  # NPDES outfall coordinates (enables real 3DEP head; see data/raw/npdes_downloads/)
+  outfall_coords_path: "data/raw/npdes_downloads/NPDES_PERM_FEATURE_COORDS.csv"
+
+  # Disk cache for elevation lookups (keyed by rounded lat/lon)
+  elevation_cache_dir: "data/elevation_cache"
+  coord_precision: 5              # decimal places for cache key rounding
+
+  # Turbine database
+  turbine_db_path: "data/turbines/turbine_manufacturers.csv"
+
+  # Sizing optimizer
+  min_capacity_factor: 0.40       # minimum acceptable capacity factor for rating
+  sizing_q_fractions:             # Q fractions of design_flow to evaluate
+    - 0.3
+    - 0.4
+    - 0.5
+    - 0.6
+    - 0.7
+    - 0.8
+    - 0.9
+    - 1.0
+
+# ── Processing ────────────────────────────────────────────────────────────────
+processing:
+  dmr_chunk_size: 500000
+  max_parallel_downloads: 4
+  download_retry_attempts: 3
+  download_retry_backoff_s: 5
+  min_months_for_features: 12      # minimum DMR months to compute full features
+  max_utilization_ratio: 2.0       # flag anything above this
+  max_flow_mgd_sanity: 2000        # hard cap on individual DMR flow readings (MGD)
+  dmr_design_ratio_cap: 5.0       # null mean_flow_mgd when > N× design_flow (DMR units artifact)
+                                   # largest known US POTW (MWRDGC Stickney) ~1,200 MGD
+                                   # anything above 2,000 is almost certainly a unit error
+  # P1-COORD-GUARD (2026-07-06): inclusive lat/lon bands for all US NPDES territories.
+  # Naive "lat < 15" rejection is WRONG — Guam (~13.4°N) and CNMI have NPDES permits.
+  # Bands: AS = [-14.8, -10.8]; GU/MP/CNMI..USVI/PR..HI..CONUS..AK = [13.0, 71.5]
+  coord_lat_valid_bands: [[-14.8, -10.8], [13.0, 71.5]]   # US NPDES territories: AS | GU/MP..AK
+  coord_lon_valid_bands: [[-180.0, -64.4], [144.5, 146.2]] # W-hemisphere US | GU/MP
+
+# ── NODI code handling ────────────────────────────────────────────────────────
+nodi_codes:
+  treat_as_zero:
+    - "C"    # Conditionally exempt
+    - "B"    # Below detection
+  treat_as_estimated:
+    - "E"    # Estimated value
+  treat_as_missing:
+    - "Q"    # Quantity not sufficient
+
+# ── POTW filter criteria ──────────────────────────────────────────────────────
+potw_filter:
+  facility_type_indicators:
+    - "POTW"
+    - "POT"
+  exclude_facility_type_codes:
+    - "FDF"    # Federal facilities
+  active_permit_status_codes:
+    - "EFF"    # Effective
+    - "NON"    # Non-major effective
+    - "ADC"    # Administratively Continued (still operating under prior permit)
+
+# ── Phase 5: ML ground truth ──────────────────────────────────────────────────
+phase5:
+  # EIA-860 + EIA-923 source dir (external drive). Override if remounted elsewhere.
+  eia_data_dir: "/Volumes/SANDISK/WOWERS_Pivot_Data/V2_Industrial_Cooling_Water_Discharge"
+  eia_year: null   # null = auto-detect latest EIA860_<y> / EIA923_<y> pair present
+
+  # P5-EHA: DOE HydroSource Existing Hydropower Assets (ORNL).
+  # Folder must contain ORNL_EHAHydroPlant_PublicFY2024.xlsx and
+  # EHA_Annual_CapacityFactor.xlsx (both already on SANDISK).
+  eha_data_dir: "/Volumes/SANDISK/WOWERS_Pivot_Data/Phase5_ML_GroundTruth/EHA_HydroSource_ORNL"
+  eha_year: null   # null = use EHA_DEFAULT_YEAR (2022, latest in CF workbook)
+
+  # D1 — combined ground truth output (gitignored; data/raw/ is gitignored)
+  combined_ground_truth_path: "data/raw/ground_truth/combined_ground_truth.parquet"
+
+  # D2 — feature matrix output (gitignored; data/processed/ is gitignored)
+  feature_matrix_path: "data/processed/phase5/feature_matrix.parquet"
+
+  # D3 — model directory for serialised artifacts (gitignored)
+  model_dir: "data/processed/phase5/models"
+
+  # D3 — Methodology decision toggle (UNRESOLVED — human must choose before HP sweep).
+  # false (default, safe): physics energy estimate dropped as leakage.
+  # true: physics estimate used as an input feature (physics-as-baseline experiment).
+  # See src/phase5/features.py select_model_features() docstring for trade-offs.
+  allow_physics_estimate_feature: false
+
+  # D4 — nested cross-validation settings
+  cv:
+    outer_folds: 5
+    inner_folds: 3
+    seed: 0
+
+  # D6 — USBR RISE raw download directory (Phase 5 candidate label source).
+  # Fetcher lands raw JSON + manifest; no CANONICAL_SCHEMA parse until verified.
+  usbr_rise_dir: "/Volumes/SANDISK/WOWERS_Pivot_Data/Phase5_ML_GroundTruth/USBR_RISE"
+
+# ── Phase 4: CF-calibration tiers (P4-TIER, 2026-07-06) ──────────────────────
+# Multipliers from CF_CALIBRATION_REPORT.md §6, primary 0.1–5 MW bucket.
+# Multiplier = empirical_CF / 0.872 (Phase 2 implied fleet median CF).
+# Global fleet multipliers; per-site CF spread is tight (p10–p90: 0.856–0.883).
+phase4:
+  cf_calibration:
+    floor_p25: 0.291   # river-hydro p25 CF / 0.872 → river-class pessimistic floor
+    floor_p50: 0.447   # river-hydro p50 CF / 0.872 → river-class median
+    central:   0.688   # CF=0.60 / 0.872 — relabelled OPTIMISTIC on 2026-07-25;
+                       # rests on the Conduit 3 (FERC P-14498) DESIGN PROJECTION,
+                       # never a metered figure. Key name kept for compatibility.
+    # P4-MEASURED-FLOOR (2026-08-06): the reported band floor.
+    # Point Loma WWTP, San Diego CA — the only metered treated-wastewater conduit
+    # plant in the United States. 1,500 kW / 2,515 MWh (2017, Form EIA-923) → CF
+    # 0.1914; multiplier = 0.1914 / 0.872. Yields 89.8 GWh/yr across the viable
+    # fleet, replacing 118.9 as the reported floor (Tom, 2026-08-06; advisor
+    # sign-off outstanding). Source dataset:
+    # data/raw/ground_truth/ferc_conduit_candidates.parquet
+    measured_point_loma: 0.2195
+
+# ── Paths (relative to project root) ─────────────────────────────────────────
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  checkpoints: "data/checkpoints"
+  logs: "logs"
