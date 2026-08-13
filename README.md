@@ -143,39 +143,3 @@ The exported results *are* committed — `exports/scored_sites.geojson` (3,778 s
 `exports/viable_sites.geojson` (1,138 sites), 59 properties each — so the dashboard and
 every figure work without re-running the pipeline. The full property dictionary is
 Appendix A of the thesis.
-
-## Notes for reviewers
-
-This repository is a cleaned submission copy. The development history contained project
-journals, interim analysis reports, agent prompts, and superseded planning documents; none
-is cited by the thesis, and all were removed here. Two consequences worth knowing:
-
-- **Some code comments cite documents not present in this repository** — for example
-  `config/settings.yaml` attributes the capacity-factor multipliers to a calibration report
-  that lived outside the thesis. In every case the underlying provenance is in the thesis
-  itself: the multipliers and their derivation are in §4.4.1, and the method is
-  `scripts/cf_calibration.py`, which is included and reproduces them.
-- **A few development-only scripts were removed** along with their tests, which is why the
-  suite reports 685 rather than the 737 recorded during development. No claim made in the
-  thesis depends on them.
-
-The two figures the thesis describes as generated from the parquets (the pipeline dataflow
-and the screening state machine) keep their generator scripts, so their counts cannot drift
-from the run they describe.
-
-## Honest limitations
-
-Named in full in the thesis; the three that matter most:
-
-1. **Head is a digital-elevation-model proxy, not a measurement.** It is the largest
-   methodological assumption in the work and the input the answer is most sensitive to:
-   head dominates at 2,803 of 3,778 scored sites, and halving it turns portfolio NPV
-   negative. 360 project-viable sites still carry a literature archetype rather than an
-   elevation-derived head, and hold 27.0 % of portfolio energy.
-2. **No measured wastewater-outfall generation exists in the U.S. public datasets this
-   calibration draws on.** Instrumented case studies appear in the international
-   literature; a machine-readable national record pairing head, flow, and metered energy
-   does not.
-3. **Costs are modeled, not quoted.** Equipment cost is a power law clamped to
-   vendor-published bands; installation, interconnection, and permitting are tiered
-   assumptions. Civil works are excluded by scope.
