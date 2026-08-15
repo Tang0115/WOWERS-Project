@@ -17,12 +17,23 @@ export default function Gauge({
   p10,
   p50,
   p90,
+  headline,
   capacityFactor,
   unit = "MWh/yr",
 }: {
   p10: number;
   p50: number;
   p90: number;
+  /*
+   * Headline energy: the Phase 4 scorecard figure, which is what the needle's
+   * capacity factor, the calibration band, and every financial number on the
+   * page are computed from. It is NOT the P50 below: that comes from the
+   * earlier Monte-Carlo stage, before terrain and part-load efficiency were
+   * applied, and across the fleet it runs a median 1.25x higher (up to 12x on
+   * individual sites). Leading with P50 put the page's largest number in
+   * disagreement with everything under it.
+   */
+  headline: number | null;
   capacityFactor: number | null;
   unit?: string;
 }) {
@@ -85,24 +96,27 @@ export default function Gauge({
 
       <div style={{ marginTop: -6 }}>
         <div style={{ fontSize: 32, fontWeight: 800, color: "#0f1b2d", lineHeight: 1 }}>
-          {Math.round(p50).toLocaleString()}
+          {headline != null ? Math.round(headline).toLocaleString() : "—"}
         </div>
         <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
-          {unit} · most-likely estimate
+          {unit} · modeled annual energy
         </div>
         <div className="hint" style={{ fontSize: 12, marginTop: 6, fontWeight: 600, color: "#0f1b2d" }} title="Actual energy captured vs. running the turbine at full rated power every hour of the year. Reflects how well flow matches the turbine's design point.">
           {capacityFactor != null ? `${Math.round(capacityFactor * 100)}% capacity factor` : "Capacity factor unavailable"}
         </div>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-around", marginTop: 10, fontSize: 12 }}>
-        <div style={{ textAlign: "center" }} title="Conservative estimate (P10): actual output should beat this ~90% of the time.">
+      <div className="muted" style={{ fontSize: 11, marginTop: 12, textAlign: "center" }}>
+        Screening-stage spread (earlier Monte-Carlo pass)
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-around", marginTop: 4, fontSize: 12 }}>
+        <div style={{ textAlign: "center" }} title="Conservative estimate (P10) from the earlier Monte-Carlo pass: that model's output beats this ~90% of the time.">
           <div className="muted hint">Conservative</div><b>{num(p10)}</b>
         </div>
-        <div style={{ textAlign: "center" }} title="Most-likely estimate (P50 / median): the central planning number.">
-          <div className="muted hint">Most likely</div><b>{num(p50)}</b>
+        <div style={{ textAlign: "center" }} title="Median (P50) of the earlier Monte-Carlo pass, before terrain and part-load efficiency were applied. Fleet-wide it runs a median 1.25x above the modeled annual energy above, so it is shown as a spread rather than as the headline.">
+          <div className="muted hint">Median</div><b>{num(p50)}</b>
         </div>
-        <div style={{ textAlign: "center" }} title="Optimistic estimate (P90): output tops this only ~10% of the time.">
+        <div style={{ textAlign: "center" }} title="Optimistic estimate (P90) from the earlier Monte-Carlo pass: that model tops this only ~10% of the time.">
           <div className="muted hint">Optimistic</div><b>{num(p90)}</b>
         </div>
       </div>

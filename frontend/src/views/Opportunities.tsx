@@ -4,7 +4,9 @@ import type { Band } from "../lib/types";
 import { BAND_COLOR, BAND_LABEL } from "../lib/colors";
 import { num, usd } from "../lib/format";
 import KpiTile from "../components/KpiTile";
+import Caveat from "../components/Caveat";
 import SiteTable from "../components/SiteTable";
+import { CEILING_NOTE, MODELED_NOTE, TIER_HINT, TIER_SUB } from "../lib/notes";
 
 const BANDS: Band[] = ["high", "moderate", "marginal"];
 
@@ -30,6 +32,13 @@ export default function Opportunities() {
     () => Math.round(sites.reduce((a, p) => a + (p.energy_kwh ?? 0), 0) / 1e3),
     [sites],
   );
+  // Same selection, re-read at the two ends of the calibration band, so the
+  // headline energy is never shown without the range it actually sits in.
+  const bandGwh = useMemo(() => {
+    const sumGwh = (key: "central" | "measured") =>
+      sites.reduce((a, p) => a + (p.energy_calib[key] ?? 0), 0) / 1e6;
+    return { low: sumGwh("measured"), high: sumGwh("central") };
+  }, [sites]);
 
   const toggle = (b: Band) =>
     setBands((cur) => (cur.includes(b) ? cur.filter((x) => x !== b) : [...cur, b]));
@@ -44,11 +53,21 @@ export default function Opportunities() {
         {num(viable.length)} economically viable micro-hydro projects nationwide
       </div>
 
-      <div className="kpi-row" style={{ marginBottom: 18 }}>
-        <KpiTile value={num(sites.length)} label="Opportunities Shown" />
-        <KpiTile value={usd(totalNpv)} label="Combined NPV" accent="var(--green)" />
-        <KpiTile value={`${num(totalEnergy)} MWh/yr`} label="Combined Energy" accent="var(--blue)" />
+      <div className="kpi-row" style={{ marginBottom: 14 }}>
+        <KpiTile value={num(sites.length)} label="Opportunities Shown" sub={TIER_SUB} hint={TIER_HINT} />
+        <KpiTile value={usd(totalNpv)} label="Combined NPV" accent="var(--green)" sub={TIER_SUB} hint={TIER_HINT} />
+        <KpiTile
+          value={`${num(totalEnergy)} MWh/yr`}
+          label="Combined Energy"
+          accent="var(--blue)"
+          sub={`calibrated ${bandGwh.low.toFixed(1)}–${bandGwh.high.toFixed(1)} GWh/yr`}
+          hint={TIER_HINT}
+        />
       </div>
+
+      <Caveat tone="warn" style={{ marginBottom: 18 }}>
+        {CEILING_NOTE} {MODELED_NOTE}
+      </Caveat>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
         {BANDS.map((b) => (

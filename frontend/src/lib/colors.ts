@@ -7,11 +7,14 @@ export const BAND_COLOR: Record<Band, string> = {
   nonviable: "#9ca3af",
 };
 
+// Bands describe viable sites by payback. Anything that fails the viability
+// gate is grey regardless of payback, so the grey label names the gate rather
+// than a payback threshold.
 export const BAND_LABEL: Record<Band, string> = {
   high: "Highly viable (< 5 yr)",
   moderate: "Moderately viable (5–15 yr)",
   marginal: "Marginal (15–20 yr)",
-  nonviable: "Non-viable (> 20 yr)",
+  nonviable: "Not viable (fails NPV / payback gate)",
 };
 
 export const CONF_COLOR: Record<Confidence, string> = {

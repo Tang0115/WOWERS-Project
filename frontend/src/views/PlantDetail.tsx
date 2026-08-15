@@ -3,7 +3,15 @@ import { fetchPlant, useAsync } from "../lib/data";
 import { CONF_PILL, DOE_FUNDING_URL, TURBINE_LABEL, TURBINE_VENDOR } from "../lib/colors";
 import { num, pct, pctRaw, usd, years } from "../lib/format";
 import Gauge from "../components/charts/Gauge";
+import Caveat from "../components/Caveat";
+import { SiteCalibrationBand } from "../components/CalibrationBand";
 import { MiniMap } from "../components/MapView";
+import {
+  EFFICIENCY_CURVE_NOTE,
+  FINANCIAL_CEILING_NOTE,
+  MODELED_NOTE,
+  VENDOR_NOTE,
+} from "../lib/notes";
 import { EfficiencyCurve, Tornado } from "../components/charts/Charts";
 
 function Row({ l, v, hint }: { l: string; v: string; hint?: string }) {
@@ -31,6 +39,7 @@ export default function PlantDetail() {
   if (!p) return <div className="loading">Loading plant…</div>;
 
   const f = p.financial;
+  const measuredHead = p.elevation.head_source === "usgs_3dep";
   const vendor = p.turbine.type ? TURBINE_VENDOR[p.turbine.type] : undefined;
   const similarParams = new URLSearchParams();
   if (p.state) similarParams.set("state", p.state);
@@ -52,9 +61,13 @@ export default function PlantDetail() {
         {p.dmr_backed && <span className="pill pill-high">✓ DMR-Backed</span>}
         {p.tier && <span className="pill pill-lower">Tier {p.tier}</span>}
       </div>
-      <div className="muted" style={{ fontSize: 13, margin: "4px 0 18px" }}>
+      <div className="muted" style={{ fontSize: 13, margin: "4px 0 12px" }}>
         {p.city}, {p.state} &nbsp;|&nbsp; NPDES: {p.id} &nbsp;|&nbsp; {num(p.flow.mean_mgd)} MGD mean flow
       </div>
+
+      <Caveat tone="warn" style={{ marginBottom: 18 }}>
+        {MODELED_NOTE} {FINANCIAL_CEILING_NOTE}
+      </Caveat>
 
       <div className="pd-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr 1fr", gap: 18, alignItems: "start" }}>
         {/* left column */}
@@ -70,11 +83,28 @@ export default function PlantDetail() {
           </div>
           <div className="card card-pad">
             <CardHead title="⛰ Elevation Data" />
-            <Row l="Head Source" v={p.elevation.head_source === "usgs_3dep" ? "USGS 3DEP ✓" : "Literature"} hint="USGS 3DEP is a measured elevation model; Literature is a size-based statistical estimate used when 3DEP coordinates aren't available." />
+            <Row l="Head Source" v={measuredHead ? "USGS 3DEP ✓" : "Size archetype"} hint="USGS 3DEP is a measured elevation model; the archetype is a size-based statistical estimate used when no valid 3DEP elevation pair could be resolved." />
             <Row l="Net Head" v={p.elevation.head_net_m != null ? `${p.elevation.head_net_m} m` : "—"} />
             <Row l="Gross Head" v={p.elevation.head_gross_m != null ? `${p.elevation.head_gross_m} m` : "—"} />
-            <Row l="Facility Elevation" v={p.elevation.facility_elev_m != null ? `${num(p.elevation.facility_elev_m)} m` : "—"} />
-            <Row l="Outfall Elevation" v={p.elevation.outfall_elev_m != null ? `${num(p.elevation.outfall_elev_m)} m` : "—"} />
+            {/*
+              The elevation pair is only shown when it is what produced the head.
+              On archetype-head sites the two 3DEP samples were rejected, so they
+              do not subtract to the gross head above and can even put the outfall
+              uphill of the plant — printing them implies a derivation that did
+              not happen.
+            */}
+            {measuredHead ? (
+              <>
+                <Row l="Facility Elevation" v={p.elevation.facility_elev_m != null ? `${num(p.elevation.facility_elev_m)} m` : "—"} />
+                <Row l="Outfall Elevation" v={p.elevation.outfall_elev_m != null ? `${num(p.elevation.outfall_elev_m)} m` : "—"} />
+              </>
+            ) : (
+              <div className="faint" style={{ fontSize: 11, marginTop: 8, lineHeight: 1.45 }}>
+                No valid elevation pair for this site, so the head above is a size-based
+                statistical estimate rather than a measured elevation difference. A site visit
+                or a surveyed outfall invert is what would replace it.
+              </div>
+            )}
           </div>
           {p.lat != null && p.lon != null && (
             <div className="card card-pad">
@@ -92,8 +122,15 @@ export default function PlantDetail() {
           <div className="card card-pad card-col">
             <CardHead title="Energy Recovery Estimate" />
             {p.energy.p50_mwh != null && p.energy.p10_mwh != null && p.energy.p90_mwh != null ? (
-              <Gauge p10={p.energy.p10_mwh} p50={p.energy.p50_mwh} p90={p.energy.p90_mwh} capacityFactor={p.turbine.capacity_factor} />
+              <Gauge
+                p10={p.energy.p10_mwh}
+                p50={p.energy.p50_mwh}
+                p90={p.energy.p90_mwh}
+                headline={p.energy.annual_kwh != null ? p.energy.annual_kwh / 1e3 : null}
+                capacityFactor={p.turbine.capacity_factor}
+              />
             ) : <div className="muted">No energy estimate.</div>}
+            <SiteCalibrationBand calib={p.energy.calib} />
             <div className="card-foot faint" style={{ fontSize: 11, textAlign: "center", paddingTop: 10 }}>
               Offsets {pctRaw(p.energy.offset_pct)} of plant electricity · ≈{num(p.energy.equivalent_homes)} homes
             </div>
@@ -111,8 +148,13 @@ export default function PlantDetail() {
             <Row l="Capacity Factor" v={pct(p.turbine.capacity_factor)} hint="Actual annual output vs. running at full rated power 24/7 — this also drives the gauge needle above." />
             {p.turbine.rated_flow_m3s != null && p.turbine.peak_efficiency_pct != null && (
               <div className="card-foot" style={{ paddingTop: 10 }}>
-                <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>Efficiency Curve</div>
+                <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>
+                  Efficiency Curve <span className="hint" title={EFFICIENCY_CURVE_NOTE}>(synthesized)</span>
+                </div>
                 <EfficiencyCurve qRated={p.turbine.rated_flow_m3s} peakPct={p.turbine.peak_efficiency_pct} />
+                <div className="faint" style={{ fontSize: 11, marginTop: 6, lineHeight: 1.45 }}>
+                  {EFFICIENCY_CURVE_NOTE}
+                </div>
               </div>
             )}
           </div>
@@ -157,7 +199,7 @@ export default function PlantDetail() {
             <CardHead title="Next Steps" />
             {vendor && (
               <a href={vendor.url} target="_blank" rel="noopener noreferrer" className="btn btn-blue" style={{ width: "100%", justifyContent: "center", marginBottom: 8 }}>
-                Get Turbine Quotes ↗
+                Contact a {TURBINE_LABEL[p.turbine.type ?? ""] ?? "turbine"} Supplier ↗
               </a>
             )}
             <a href={DOE_FUNDING_URL} target="_blank" rel="noopener noreferrer" className="btn btn-green" style={{ width: "100%", justifyContent: "center", marginBottom: 8 }}>
@@ -167,9 +209,9 @@ export default function PlantDetail() {
               View Similar Sites
             </Link>
             {vendor && (
-              <div className="faint" style={{ fontSize: 11, marginTop: 10, textAlign: "center" }}>
-                Supplier: {vendor.vendor}
-              </div>
+              <Caveat style={{ marginTop: 12, fontSize: 11 }}>
+                {vendor.vendor}. {VENDOR_NOTE}
+              </Caveat>
             )}
           </div>
         </div>

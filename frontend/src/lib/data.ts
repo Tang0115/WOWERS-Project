@@ -14,6 +14,8 @@
  */
 
 import { useEffect, useState } from "react";
+import type { CalibEnergy } from "./calibration";
+import { CALIB_TIERS } from "./calibration";
 import type {
   Band,
   Confidence,
@@ -141,12 +143,31 @@ function payback(v: number | null): number | null {
   return v != null && v < 1e5 ? Math.round(v * 100) / 100 : null;
 }
 
-function viabilityBand(pb: number | null): Band {
-  if (pb === null) return "nonviable";
+// Payback alone is not viability: the gate is NPV > 0 AND payback <= 20 yr AND
+// a real IRR, and payback is undiscounted while NPV is not. 865 scored sites
+// clear the payback thresholds while failing the gate — 215 of them landing in
+// the 5-15 yr "moderately viable" band with a negative NPV. Colouring those
+// amber made the map claim a verdict the pipeline had refused, so a site that
+// fails the gate is grey whatever its payback.
+function viabilityBand(pb: number | null, viable: boolean): Band {
+  if (!viable || pb === null) return "nonviable";
   if (pb < 5) return "high";
   if (pb <= 15) return "moderate";
   if (pb <= 20) return "marginal";
   return "nonviable";
+}
+
+// The four calibrated energy columns, plus the as-modeled ceiling, keyed by
+// tier. Read straight from the export — the browser never re-scales anything
+// itself, so a tier's value is whatever the pipeline wrote for it.
+function calibOf(p: SiteProps): CalibEnergy {
+  return {
+    ceiling: p.annual_energy_kwh,
+    central: p.energy_kwh_calib_central,
+    floor_p50: p.energy_kwh_calib_floor_p50,
+    floor_p25: p.energy_kwh_calib_floor_p25,
+    measured: p.energy_kwh_calib_measured_point_loma,
+  };
 }
 
 function siteConfidence(p: SiteProps): Confidence {
@@ -209,12 +230,15 @@ export async function fetchPlants(): Promise<PlantCollection> {
             ? Math.round(p.annual_energy_kwh / 1e3)
             : null,
         energy_kwh: p.annual_energy_kwh,
+        energy_calib: calibOf(p),
         payback: pb,
         npv: p.npv_usd,
         tier: p.site_tier,
         viable: p.project_viable,
-        band: viabilityBand(pb),
+        band: viabilityBand(pb, p.project_viable),
         confidence: siteConfidence(p),
+        flow_measured: p.data_quality === "dmr",
+        head_measured: p.head_source === "usgs_3dep",
       },
     };
   });
@@ -259,6 +283,15 @@ export async function fetchNational(): Promise<National> {
     .map((p) => payback(p.payback_years))
     .filter((v): v is number => v != null);
 
+  // Calibration band over the same viable cohort the KPIs use. Summed in kWh
+  // and rounded once per tier, matching viable_energy_mwh's own rounding.
+  const band_mwh = Object.fromEntries(
+    CALIB_TIERS.map((t) => [
+      t.key,
+      Math.round(_sum(vs.map((p) => calibOf(p)[t.key])) / 1e3),
+    ]),
+  ) as CalibEnergy;
+
   return {
     plants_analyzed: sites.meta.plants_analyzed,
     scored_sites: sites.meta.scored_sites,
@@ -269,6 +302,7 @@ export async function fetchNational(): Promise<National> {
     portfolio_capex_usd: Math.round(_sum(vs.map((p) => p.total_capex_usd))),
     annual_savings_usd: Math.round(_sum(vs.map((p) => p.annual_revenue_usd))),
     viable_energy_mwh: Math.round(_sum(vs.map((p) => p.annual_energy_kwh)) / 1e3),
+    band_mwh,
     median_payback: _median1dp(paybacks),
     by_state,
     top_opportunities,
@@ -314,7 +348,7 @@ export async function fetchPortfolio(state: string): Promise<Portfolio> {
       energy_mwh:
         p.annual_energy_kwh != null ? Math.round(p.annual_energy_kwh / 1e3) : null,
       confidence: siteConfidence(p),
-      band: viabilityBand(pb),
+      band: viabilityBand(pb, p.project_viable),
       viable: p.project_viable,
     };
   });
@@ -377,6 +411,7 @@ export async function fetchPlant(id: string): Promise<PlantDetail> {
       equivalent_homes: p.equivalent_homes_p50,
       annual_kwh: p.annual_energy_kwh,
       offset_pct: p.energy_offset_pct,
+      calib: calibOf(p),
     },
     elevation: {
       head_source: p.head_source,

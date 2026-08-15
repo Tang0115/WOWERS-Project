@@ -4,6 +4,8 @@ import { fetchPlants, useAsync } from "../lib/data";
 import { TURBINE_LABEL } from "../lib/colors";
 import { num } from "../lib/format";
 import SiteTable from "../components/SiteTable";
+import Caveat from "../components/Caveat";
+import { CEILING_NOTE, MODELED_NOTE } from "../lib/notes";
 
 /** Full plant directory — every scored site, filterable via URL params
     (?state=MN&turbine=Kaplan&viable=1) so other pages can deep-link. */
@@ -56,6 +58,10 @@ export default function Plants() {
       <div className="muted" style={{ fontSize: 14, marginBottom: 18 }}>
         All {num(all.length)} scored wastewater sites — search, filter, export
       </div>
+
+      <Caveat tone="warn" style={{ marginBottom: 16 }}>
+        {CEILING_NOTE} {MODELED_NOTE}
+      </Caveat>
 
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
         <select value={state} onChange={(e) => setParam("state", e.target.value)}>

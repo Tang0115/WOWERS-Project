@@ -95,6 +95,48 @@ a:hover { text-decoration: underline; }
 .kpi .v { font-size: 26px; font-weight: 800; color: var(--navy); line-height: 1.1; }
 .kpi .l { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
 
+.kpi-sub { display: inline-block; font-size: 11px; color: var(--text-faint); margin-top: 4px; }
+
+/* ---- Caveats: standing bounds on the figures beside them ---- */
+.caveat {
+  display: flex; align-items: flex-start; gap: 9px; border-radius: 10px;
+  padding: 10px 13px; font-size: 12px; line-height: 1.5; border: 1px solid;
+}
+.caveat-note { background: #f5f8fd; border-color: #e6edf8; color: var(--text-dim); }
+.caveat-warn { background: #fffaf0; border-color: #f6e2bd; color: #7c4a03; }
+.caveat-ico {
+  flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; margin-top: 1px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: #fff;
+}
+.caveat-note .caveat-ico { background: #94a8c4; }
+.caveat-warn .caveat-ico { background: #d97706; }
+
+/* ---- Calibration band ---- */
+.cal-row { padding: 9px 0; border-bottom: 1px solid #eef1f6; }
+.cal-row:last-of-type { border-bottom: none; }
+.cal-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.cal-label { font-size: 13px; font-weight: 600; }
+.cal-val { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cal-tag {
+  margin-left: 8px; padding: 2px 7px; border-radius: 999px; background: #e7f8ee;
+  color: #15803d; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .3px; vertical-align: 1px;
+}
+.cal-track { height: 8px; border-radius: 4px; background: #eef1f6; margin: 6px 0 5px; overflow: hidden; }
+.cal-fill { height: 100%; border-radius: 4px; }
+.cal-basis { font-size: 11.5px; color: var(--text-faint); line-height: 1.45; }
+.cal-note {
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text-dim); line-height: 1.55;
+}
+
+.cal-site { margin-top: 12px; }
+.cal-site-row { display: flex; align-items: center; gap: 10px; padding: 3px 0; font-size: 12px; }
+.cal-site-label { display: flex; align-items: center; gap: 6px; width: 92px; flex-shrink: 0; color: var(--text-dim); }
+.cal-site-bar { flex: 1; min-width: 0; }
+.cal-site-val { width: 84px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+
 /* ---- Buttons ---- */
 .btn {
   display: inline-flex; align-items: center; gap: 7px; border: none; cursor: pointer;

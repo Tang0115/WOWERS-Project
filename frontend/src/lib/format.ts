@@ -14,6 +14,10 @@ export const num = (v: number | null | undefined, d = 0): string =>
 export const mwh = (v: number | null | undefined): string =>
   v == null ? "—" : `${num(v)} MWh/yr`;
 
+/** MWh/yr in, GWh/yr out — portfolio-scale energy reads better at GWh. */
+export const gwh = (v: number | null | undefined, d = 1): string =>
+  v == null ? "—" : `${(v / 1e3).toFixed(d)} GWh/yr`;
+
 export const years = (v: number | null | undefined): string =>
   v == null ? "—" : `${v.toFixed(1)} yr`;
 

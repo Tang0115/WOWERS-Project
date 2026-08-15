@@ -5,6 +5,8 @@ import type { Confidence, TableRow } from "../lib/types";
 import { BAND_COLOR, CONF_PILL, TURBINE_LABEL } from "../lib/colors";
 import { downloadCsv } from "../lib/csv";
 import { num, usd, years } from "../lib/format";
+import Caveat from "../components/Caveat";
+import { CEILING_NOTE, MODELED_NOTE } from "../lib/notes";
 import { EnergyBar, RiskReturn } from "../components/charts/Charts";
 
 type Key = keyof TableRow;
@@ -91,6 +93,10 @@ export default function StatePortfolio() {
       <div className="muted" style={{ fontSize: 14, marginBottom: 18 }}>
         {num(data.n_viable)} viable {data.n_viable === 1 ? "site" : "sites"} &nbsp;|&nbsp; {usd(data.combined_npv_usd)} combined NPV &nbsp;|&nbsp; {usd(data.annual_savings_usd)}/yr savings
       </div>
+
+      <Caveat tone="warn" style={{ marginBottom: 18 }}>
+        {CEILING_NOTE} {MODELED_NOTE}
+      </Caveat>
 
       <div className="sp-body" style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 18 }}>

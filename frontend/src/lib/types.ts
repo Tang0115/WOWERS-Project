@@ -1,3 +1,5 @@
+import type { CalibEnergy } from "./calibration";
+
 export type Band = "high" | "moderate" | "marginal" | "nonviable";
 export type Confidence = "High" | "Medium" | "Lower";
 
@@ -14,12 +16,18 @@ export interface MapProps {
   // accumulates to +32 MWh/yr over the 1,138 viable sites, which disagreed with
   // the national KPI (409,170 vs 409,202 MWh/yr) for the same cohort.
   energy_kwh: number | null;
+  // Calibrated energy per tier, kWh/yr. energy_calib.ceiling === energy_kwh.
+  energy_calib: CalibEnergy;
   payback: number | null;
   npv: number | null;
   tier: string | null;
   viable: boolean;
   band: Band;
   confidence: Confidence;
+  // Provenance of the two measured inputs, carried so a view can report how
+  // much of a cohort rests on a fallback rather than on an observation.
+  flow_measured: boolean;
+  head_measured: boolean;
 }
 
 export interface PlantFeature {
@@ -53,6 +61,9 @@ export interface National {
   portfolio_capex_usd: number | null;
   annual_savings_usd: number | null;
   viable_energy_mwh: number | null;
+  // Viable-cohort energy at each calibration tier, MWh/yr. The `ceiling` entry
+  // equals viable_energy_mwh; the rest are the calibration band.
+  band_mwh: CalibEnergy;
   median_payback: number | null;
   by_state: { state: string; viable: number }[];
   top_opportunities: TopOpportunity[];
@@ -105,6 +116,8 @@ export interface PlantDetail {
   energy: {
     p10_mwh: number | null; p50_mwh: number | null; p90_mwh: number | null;
     equivalent_homes: number | null; annual_kwh: number | null; offset_pct: number | null;
+    // This site's energy at each calibration tier, kWh/yr.
+    calib: CalibEnergy;
   };
   elevation: {
     head_source: string | null; head_net_m: number | null; head_gross_m: number | null;

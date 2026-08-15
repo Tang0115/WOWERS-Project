@@ -5,6 +5,8 @@ import type { PlantCollection } from "../lib/types";
 import { BAND_COLOR, BAND_LABEL, TURBINE_LABEL } from "../lib/colors";
 import { mwh, num, usd, years } from "../lib/format";
 import KpiTile from "../components/KpiTile";
+import Caveat from "../components/Caveat";
+import { MODELED_NOTE, TIER_HINT, TIER_SUB } from "../lib/notes";
 import MapView from "../components/MapView";
 import type { LngLatBounds } from "../components/MapView";
 import { StateBar } from "../components/charts/Charts";
@@ -113,14 +115,17 @@ export default function NationalMap() {
       <div className="nm-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", padding: "14px 22px", background: "#fff", borderBottom: "1px solid var(--border)" }}>
         <div>
           <div style={{ fontSize: 20, fontWeight: 800, color: "var(--navy)" }}>National Opportunity Map</div>
-          <div className="muted" style={{ fontSize: 12 }}>Micro-hydro energy recovery across US wastewater plants</div>
+          <div className="muted" style={{ fontSize: 12 }}>
+            Micro-hydro energy recovery across US wastewater plants ·{" "}
+            <span className="hint" title={`${MODELED_NOTE} ${TIER_HINT}`}>modeled screening estimates, ceiling tier</span>
+          </div>
         </div>
         {kpis && (
           <div className="kpi-row">
             <KpiTile value={num(kpis.shown)} label="Sites Shown" />
-            <KpiTile value={num(kpis.viable)} label="Viable in Filter" accent="var(--blue)" />
-            <KpiTile value={usd(kpis.npv)} label="NPV (viable)" accent="var(--green)" />
-            <KpiTile value={years(kpis.medianPayback)} label="Median Payback" />
+            <KpiTile value={num(kpis.viable)} label="Viable in Filter" accent="var(--blue)" sub={TIER_SUB} hint={TIER_HINT} />
+            <KpiTile value={usd(kpis.npv)} label="NPV (viable)" accent="var(--green)" sub={TIER_SUB} hint={TIER_HINT} />
+            <KpiTile value={years(kpis.medianPayback)} label="Median Payback" sub={TIER_SUB} hint={TIER_HINT} />
           </div>
         )}
       </div>
@@ -169,6 +174,11 @@ export default function NationalMap() {
             ))}
           </div>
           {filtered && <div className="faint" style={{ fontSize: 11, marginTop: 14 }}>{num(filtered.features.length)} sites shown</div>}
+
+          <Caveat style={{ marginTop: 16, fontSize: 11.5 }}>
+            {MODELED_NOTE} Bands and NPV are the uncalibrated ceiling tier —{" "}
+            <Link to="/analytics">see the calibration band</Link>.
+          </Caveat>
         </div>
 
         {/* map */}

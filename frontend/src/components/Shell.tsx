@@ -25,8 +25,11 @@ export default function Shell({ children }: { children: ReactNode }) {
             </NavLink>
           ))}
         </nav>
-        <div style={{ marginTop: "auto", padding: 16, fontSize: 11 }} className="faint">
+        <div style={{ marginTop: "auto", padding: 16, fontSize: 11, lineHeight: 1.5 }} className="faint">
           Data: EPA NPDES/DMR · EPRI · USGS 3DEP
+          <div style={{ marginTop: 6 }}>
+            Modeled screening estimates. No site here has been built or metered.
+          </div>
         </div>
       </aside>
       <div className="main">{children}</div>

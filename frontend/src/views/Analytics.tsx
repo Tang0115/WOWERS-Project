@@ -4,6 +4,9 @@ import { BAND_COLOR, CONF_COLOR, TURBINE_LABEL } from "../lib/colors";
 import type { Band, Confidence } from "../lib/types";
 import { num, usd, years } from "../lib/format";
 import KpiTile from "../components/KpiTile";
+import Caveat from "../components/Caveat";
+import { CalibrationBandCard } from "../components/CalibrationBand";
+import { CEILING_NOTE, MODELED_NOTE, TIER_HINT, TIER_SUB } from "../lib/notes";
 import { Histogram, MixBar, StateBar } from "../components/charts/Charts";
 
 const PB_BUCKETS: { label: string; min: number; max: number; band: Band }[] = [
@@ -25,22 +28,18 @@ export default function Analytics() {
   );
   const viable = useMemo(() => all.filter((p) => p.viable), [all]);
 
-  const paybackHist = useMemo(() => {
-    const buckets = PB_BUCKETS.map((b) => ({
-      bucket: b.label,
-      count: viable.filter((p) => p.payback != null && p.payback >= b.min && p.payback < b.max).length,
-      color: BAND_COLOR[b.band],
-    }));
-    // Viable sites never exceed ~14 yr payback (the NPV>0 gate cuts them off
-    // well before the 20-yr limit), so everything past 15 yr — including the
-    // ">20 yr" band and never-pays-back sites — is the non-viable tail.
-    buckets.push({
-      bucket: "> 15 yr\n(Non-viable)",
-      count: all.filter((p) => p.payback == null || p.payback > 15).length,
-      color: BAND_COLOR.nonviable,
-    });
-    return buckets;
-  }, [all, viable]);
+  // Viable sites only. The non-viable tail (payback over 15 yr or never pays
+  // back) is left out: it dwarfs every viable bucket and flattens the shape
+  // this chart exists to show.
+  const paybackHist = useMemo(
+    () =>
+      PB_BUCKETS.map((b) => ({
+        bucket: b.label,
+        count: viable.filter((p) => p.payback != null && p.payback >= b.min && p.payback < b.max).length,
+        color: BAND_COLOR[b.band],
+      })),
+    [viable],
+  );
 
   const turbineMix = useMemo(() => {
     const m = new Map<string, number>();
@@ -86,13 +85,21 @@ export default function Analytics() {
         Distribution views across {num(national.scored_sites)} scored sites, {num(national.viable_projects)} viable
       </div>
 
-      <div className="kpi-row" style={{ marginBottom: 18 }}>
-        <KpiTile value={usd(national.portfolio_npv_usd)} label="Portfolio NPV" accent="var(--green)" />
-        <KpiTile value={usd(national.portfolio_capex_usd)} label="Total CapEx" />
-        <KpiTile value={`${usd(national.annual_savings_usd)}/yr`} label="Annual Savings" accent="var(--blue)" />
-        <KpiTile value={`${num(national.viable_energy_mwh)} MWh/yr`} label="Recoverable Energy" />
-        <KpiTile value={years(national.median_payback)} label="Median Payback" />
+      <div className="kpi-row" style={{ marginBottom: 14 }}>
+        <KpiTile value={usd(national.portfolio_npv_usd)} label="Portfolio NPV" accent="var(--green)" sub={TIER_SUB} hint={TIER_HINT} />
+        <KpiTile value={usd(national.portfolio_capex_usd)} label="Total CapEx" sub={TIER_SUB} hint={TIER_HINT} />
+        <KpiTile value={`${usd(national.annual_savings_usd)}/yr`} label="Annual Savings" accent="var(--blue)" sub={TIER_SUB} hint={TIER_HINT} />
+        <KpiTile value={`${num(national.viable_energy_mwh)} MWh/yr`} label="Recoverable Energy" sub={TIER_SUB} hint={TIER_HINT} />
+        <KpiTile value={years(national.median_payback)} label="Median Payback" sub={TIER_SUB} hint={TIER_HINT} />
         <KpiTile value={num(national.high_confidence_sites)} label="High-Confidence Sites" />
+      </div>
+
+      <Caveat tone="warn" style={{ marginBottom: 18 }}>
+        {CEILING_NOTE} {MODELED_NOTE}
+      </Caveat>
+
+      <div style={{ marginBottom: 18 }}>
+        <CalibrationBandCard band={national.band_mwh} />
       </div>
 
       <div className="an-grid">
@@ -100,7 +107,8 @@ export default function Analytics() {
           <h3 className="card-title">Payback Distribution</h3>
           <Histogram data={paybackHist} />
           <div className="faint" style={{ fontSize: 11, marginTop: 6 }}>
-            Colored bars: viable sites by payback. Grey bar: non-viable sites — payback over 15 yr or never pays back.
+            Viable sites by payback. The {num(all.length - viable.length)} non-viable sites — payback over 15 yr or
+            never pays back — are excluded.
           </div>
         </div>
         <div className="card card-pad">
